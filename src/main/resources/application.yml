@@ -1,0 +1,28 @@
+server:
+  port: 9090
+
+spring:
+  h2:
+    console:
+      enabled: true # 개발 작업중 DB 조회 가능
+      path: /h2-console # DB 조회 경로 설정
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:tododb # tododb 에 인 메모리(In-Memory)로 저장 (성능 좋으나 프로그램 / DB 종료시 데이터 손실)
+    username: admin
+    password: admin
+
+  jpa:
+    # generate-ddl 은 T/F 만 되어 ddl-auto 로 대체
+    #    generate-ddl: true # EntityScan 을 통해 @Entity 찾음 => 서버 시작 지점에 DDL 문을 생성하여 DB 에 적용
+    hibernate:
+      ddl-auto: create # APP 실행 시점에 테이블 자동 생성 (if exists drop table) / 반드시 로컬에서만!
+    properties:
+      hibernate:
+        show_sql: true # Hibernate 가 DB 에 보내는 쿼리를 보여줌
+        format_sql: true # 보여지는 쿼리를 이쁘게 보여줌
+
+logging:
+  level:
+    org.hibernate.SQL: debug # debug log level 설정
+    org.hibernate.type: trace # 파라미터 보여줌
