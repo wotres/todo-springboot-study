@@ -2,14 +2,15 @@ package study.todospringboot.repository;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
-import study.todospringboot.domain.OrderType;
 import study.todospringboot.domain.Todo;
 
 import java.util.List;
 
 @Repository
 @RequiredArgsConstructor // 생성자 주입
+@Slf4j
 public class TodoRepository {
     private final EntityManager em;
 
@@ -26,14 +27,15 @@ public class TodoRepository {
 //            return em.createQuery("select todo from Todo todo order by todo.createDate ASC", Todo.class)
 //                    .getResultList();
 //        }
-        return em.createQuery("select todo from Todo todo order by todo.createDate DESC", Todo.class)
+        String sql = "select todo from Todo todo order by todo.createDate DESC";
+        return em.createQuery(sql, Todo.class)
                 .getResultList();
     }
 
-    public int updateOne(Long id, String task) {
-        return em.createQuery("update Todo todo set todo.task = :task where todo.id = :id")
+    public int updateOneChecked(Long id, boolean checked) {
+        return em.createQuery("update Todo todo set todo.checked = :checked where todo.id = :id")
                 .setParameter("id", id)
-                .setParameter("task", task)
+                .setParameter("checked", checked)
                 .executeUpdate();
     }
 
@@ -44,6 +46,8 @@ public class TodoRepository {
     }
 
     public int deleteAll() {
-        return em.createQuery("delete from Todo").executeUpdate();
+        String sql = "delete from Todo";
+        return em.createQuery(sql)
+                .executeUpdate();
     }
 }

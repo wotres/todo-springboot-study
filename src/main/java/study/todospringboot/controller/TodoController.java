@@ -1,6 +1,8 @@
 package study.todospringboot.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import study.todospringboot.domain.Todo;
 import study.todospringboot.service.TodoService;
@@ -8,14 +10,17 @@ import study.todospringboot.service.TodoService;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@CrossOrigin(originPatterns = "http://localhost:3000")
 @RestController
 @RequestMapping(value = "/todo")
 @RequiredArgsConstructor
+@Slf4j
 public class TodoController {
     private final TodoService todoService;
 
     @PostMapping("/save")
-    public Long save(@RequestBody TodoRequest todoRequest) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public String save(@RequestBody TodoRequest todoRequest) {
         return todoService.save(toTodo(todoRequest));
     }
 
@@ -24,17 +29,16 @@ public class TodoController {
         return toTodoResponseList(todoService.findAll(orderType));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/task/{id}")
     public TodoResponse findOne(@PathVariable("id") final Long id) {
         return toTodoResponse(todoService.findOne(id));
     }
 
-    @GetMapping(params = {"id", "task"})
-    public int updateOne(
-            @PathVariable("id") final Long id,
-            @PathVariable("task") final String task
+    @PatchMapping()
+    public String updateOneChecked(
+            @RequestBody TodoChangeCheckRequest todoChangeCheckRequest
     ) {
-        return todoService.updateOne(id, task);
+        return todoService.updateOneChecked(todoChangeCheckRequest.getId(), todoChangeCheckRequest.isChecked());
     }
 
     @DeleteMapping("/{id}")
@@ -42,37 +46,31 @@ public class TodoController {
         return todoService.deleteOne(id);
     }
 
-    @DeleteMapping
-    public int deleteAll() {
+    @DeleteMapping()
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public String deleteAll() {
         return todoService.deleteAll();
     }
 
     private Todo toTodo(TodoRequest todoRequest) {
-        return new Todo(
-                todoRequest.getUserId(),
-                todoRequest.getTask(),
-                LocalDateTime.now(),
-                LocalDateTime.now()
-        );
+        Todo todo = new Todo();
+        todo.setUserName(todoRequest.getUserId());
+        todo.setTask(todoRequest.getTask());
+        todo.setUpdateDate(LocalDateTime.now());
+        todo.setCreateDate(LocalDateTime.now());
+        return todo;
     }
 
     private List<TodoResponse> toTodoResponseList(List<Todo> todoList) {
-        return todoList.stream().map(todo ->
-                new TodoResponse(
-                    todo.getId(),
-                    todo.getUserId(),
-                    todo.getTask(),
-                    todo.getUpdateDate(),
-                    todo.getCreateDate()
-                )
-        ).toList();
+        return todoList.stream().map(this::toTodoResponse).toList();
     }
 
     private TodoResponse toTodoResponse(Todo todo) {
         return new TodoResponse(
             todo.getId(),
-            todo.getUserId(),
+            "noName",
             todo.getTask(),
+            todo.isChecked(),
             todo.getUpdateDate(),
             todo.getCreateDate()
         );

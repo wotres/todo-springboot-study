@@ -1,6 +1,8 @@
 package study.todospringboot.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import study.todospringboot.domain.Todo;
 import study.todospringboot.repository.TodoRepository;
@@ -9,12 +11,17 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TodoService {
     private final TodoRepository todoRepository;
 
-    public Long save(Todo todo) {
+    @Transactional
+    public String save(Todo todo) {
         todoRepository.save(todo);
-        return todo.getId();
+        if (todo.getId() > 0) {
+            return "success";
+        }
+        return "fail";
     }
 
     public List<Todo> findAll(String orderType) {
@@ -25,15 +32,25 @@ public class TodoService {
         return todoRepository.findOne(todoId);
     }
 
-    public int updateOne(Long todoId, String task) {
-        return todoRepository.updateOne(todoId, task);
+    @Transactional
+    public String updateOneChecked(Long todoId, boolean checked) {
+        int result = todoRepository.updateOneChecked(todoId, checked);
+        if (result >=0) {
+            return "success";
+        }
+        return "fail";
     }
 
     public int deleteOne(Long todoId) {
         return todoRepository.deleteOne(todoId);
     }
 
-    public int deleteAll() {
-        return todoRepository.deleteAll();
+    @Transactional
+    public String deleteAll() {
+        int result = todoRepository.deleteAll();
+        if (result >=0) {
+            return "success";
+        }
+        return "fail";
     }
 }
